@@ -42,7 +42,7 @@ print("Hello Capstone Project Course")
 # %% [markdown]
 # ## Data Understanding
 #
-# At this stage the data is downloaded from the Seattle Open GeoData Portal in the csv format. Features are explored and selected for training the machine learning models and data preprocessing is performed to ensure the data set is robust against biases like unbalanced data, missing values, wrongly input values and also that it is in the right form to aid the best predictive performance.
+# At this stage the data is downloaded from the Seattle Open GeoData Portal in the csv format. Features are explored and selected for training the machine learning models and data preprocessing is performed to ensure the data set is robust against biases like unbalanced data, missing values, wrongly input values and also that it is in the right form to aid the best predictive performance. The aim is to obtain good features to reliably predict the severity of an accident
 #
 # The Data Attributes is listed below for convenience:
 #
