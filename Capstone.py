@@ -26,6 +26,7 @@ from pandas_profiling import ProfileReport
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
+from matplotlib import pyplot
 
 # %%
 print("Hello Capstone Project Course")
@@ -100,65 +101,304 @@ df.shape
 #   2. removing features ending with DESC which are meant to provide text description for the variables ending with CODE
 #   3. removing features that have a large number or percentage of missing values
 #   4. removing categorical features with high cardinality since using them for model building may introduce high dimensionality in the data set
-#   5. removing highly correlated features since they may provide redundant information and may not improve predictive perfromance
+#   5. removing highly correlated features since they may provide redundant information and may not improve predictive performance
 #   
-
-# %%
-df.isna().sum()
-
-# %%
-# simply drop whole row with NaN in "price" column
-df.dropna(subset=["SEVERITYCODE"], axis=0, inplace=True)
-
-# reset index, because we droped two rows
-df.reset_index(drop=True, inplace=True)
 
 # %%
 df1 = df.copy()
 
 # %%
-# dropping features ending with DESC
-df1.drop(['EXCEPTRSNDESC','SEVERITYDESC','SDOT_COLDESC','ST_COLDESC'], axis=1, inplace=True)
+df1.columns.values
 
 # %%
-profile = ProfileReport(df1, title='Pandas Profiling Report')
+data_clean = df1[['ADDRTYPE','INATTENTIONIND', 'UNDERINFL','WEATHER', 'ROADCOND', 'LIGHTCOND', 'SPEEDING', 'SEVERITYCODE']]
+data_clean.info()
+
+# %%
+data_clean['SEVERITYCODE'].value_counts().to_frame('count')
+
+# %% [markdown]
+# SEVERITYCODE has 5 unique values with its meaning in the table below
+#
+# | SEVERITYCODE Value | Meaning |
+# | :-: | --- |
+# | 1 | Accidents resulting in property damage |
+# | 2 | Accidents resulting in injuries |
+# | 2b | Accidents resulting in serious injuries |
+# | 3 | Accidents resulting in fatalities |
+# | 0 | Data Unavailable i.e. Blanks |
+#
+# we can see that observations with value of 0 for SEVERITYCODE will not be meaningful for our modeling
+
+# %%
+data_clean.shape
+
+# %%
+data_clean['SEVERITYCODE'] = data_clean['SEVERITYCODE'].replace('0', np.nan)
+
+# %%
+# simply drop whole row with NaN in "price" column
+data_clean.dropna(subset=["SEVERITYCODE"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+data_clean.reset_index(drop=True, inplace=True)
+
+# %%
+data_clean.info()
+
+# %%
+
+# %%
+data_clean.isna().sum()
+
+# %%
+data_final = data_clean[['ADDRTYPE', 'INATTENTIONIND',
+       'UNDERINFL', 'WEATHER', 'ROADCOND', 'LIGHTCOND', 'SPEEDING',
+       'SEVERITYCODE']]
+
+# %%
+data_final.info()
+
+# %%
+profile = ProfileReport(data_final, title='Pandas Profiling Report')
 
 # %%
 profile.to_widgets()
 
 # %%
-df1.columns.values
+data_final['UNDERINFL'] = data_final['UNDERINFL'].map({'N': 0, '0': 0, 'Y': 1, '1': 1})
 
 # %%
-df_selected = df1[['X', 'Y','ADDRTYPE','SEVERITYCODE',]]
+data_final['SPEEDING'] = data_final['SPEEDING'].map({'Y': 1})
+data_final['SPEEDING'].replace(np.nan, 0, inplace=True)
+data_final['SPEEDING'].value_counts().to_frame()
 
 # %%
-df1['ST_COLCODE'].describe()
+data_final['INATTENTIONIND'] = data_final['INATTENTIONIND'].map({'Y':1})
+data_final['INATTENTIONIND'].replace(np.nan, 0, inplace=True)
+data_final['INATTENTIONIND'].value_counts().to_frame()
 
 # %%
-df1['ADDRTYPE'].isna().sum()
+data_final['ADDRTYPE'].value_counts().to_frame()
 
 # %%
-data_clean = df1[['X', 'Y', 'WEATHER', 'ROADCOND', 'LIGHTCOND',
-                   'SPEEDING', 'SEVERITYCODE', 'UNDERINFL',
-                   'PERSONCOUNT', 'VEHCOUNT']]
-data_clean.info()
+data_final['INATTENTIONIND'].value_counts().to_frame()
 
 # %%
-# Convert INCDTTM to date type
-
-df1['INCDTTM'] = pd.to_datetime(df1['INCDTTM'], errors='coerce')
-
-# Extract month, weekday, hour information
-
-df1['Month']=df1['INCDTTM'].dt.month
-df1['Weekday']=df1['INCDTTM'].dt.weekday
-df1['Hour']=df1['INCDTTM'].dt.hour
+data_final['UNDERINFL'].value_counts().to_frame()
 
 # %%
-df1.info()
+data_final['WEATHER'].value_counts().to_frame()
 
 # %%
-df1['COLLISIONTYPE'].value_counts()
+data_final['WEATHER'] = data_final['WEATHER'].replace('Other', np.nan)
+data_final['WEATHER'] = data_final['WEATHER'].replace('Unknown', np.nan)
+data_final.dropna(subset=["WEATHER"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+data_final.reset_index(drop=True, inplace=True)
+
+# %%
+data_final['ROADCOND'].value_counts().to_frame()
+
+# %%
+data_final['ROADCOND'] = data_final['ROADCOND'].replace('Other', np.nan)
+data_final['ROADCOND'] = data_final['ROADCOND'].replace('Unknown', np.nan)
+data_final.dropna(subset=["ROADCOND"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+data_final.reset_index(drop=True, inplace=True)
+
+# %%
+data_final['LIGHTCOND'].value_counts().to_frame()
+
+# %%
+data_final['LIGHTCOND'] = data_final['LIGHTCOND'].replace('Other', np.nan)
+data_final['LIGHTCOND'] = data_final['LIGHTCOND'].replace('Unknown', np.nan)
+data_final.dropna(subset=["LIGHTCOND"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+data_final.reset_index(drop=True, inplace=True)
+
+# %%
+data_final = data_final.dropna()
+data_final.reset_index(drop=True, inplace=True)
+
+# %%
+data_final.info()
+
+# %%
+data_final = pd.concat([data_final.drop(['ADDRTYPE','WEATHER', 'ROADCOND', 'LIGHTCOND'], axis=1),
+                        pd.get_dummies(data_final['ADDRTYPE']),
+                        pd.get_dummies(data_final['WEATHER']),
+                        pd.get_dummies(data_final['ROADCOND']),
+                        pd.get_dummies(data_final['LIGHTCOND'])], axis=1)
+
+# %%
+data_final.info()
+
+# %%
+data_final.drop(data_final.columns[data_final.columns.str.contains('Unknown')], axis=1, inplace=True)
+
+# %%
+from sklearn import preprocessing
+x = data_final.drop(['SEVERITYCODE'], axis=1)
+y = data_final['SEVERITYCODE']
+data_clean_scaled = preprocessing.StandardScaler().fit(x).transform(x)
+data_clean_scaled[0:3]
+
+# %%
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(data_clean_scaled, y, stratify=y,
+                                                    test_size=0.33, random_state=12)
+
+# %% [markdown]
+#
+# # Modeling
+#
+
+# %% [markdown]
+# We start with a Decision Tree Classifier
+
+# %% [markdown]
+# ### Decision Tree Model
+
+# %%
+from sklearn.tree import DecisionTreeClassifier
+
+severityTree = DecisionTreeClassifier(criterion="gini", max_depth = 4)
+severityTree.fit(x_train,y_train)
+predTree = severityTree.predict(x_test)
+from sklearn import metrics
+print("DecisionTrees's Accuracy: ", metrics.accuracy_score(y_test, predTree))
+
+
+# %%
+print(classification_report(y_test, predTree))
+
+# %%
+y.value_counts()
+
+# %%
+y_train.value_counts()
+
+# %%
+np.unique(predTree)
+
+# %%
+
+# %% [markdown]
+# ### Decision Tree Model with class_weight set to balance
+#
+# This is to accomodate the minority classes that the previous model could not predict because of the severe class imbalance.
+
+# %%
+severityTree1 = DecisionTreeClassifier(criterion="gini", max_depth = 4, class_weight='balanced')
+severityTree1.fit(x_train,y_train)
+predTree1 = severityTree1.predict(x_test)
+from sklearn import metrics
+print("DecisionTrees's Accuracy: ", metrics.accuracy_score(y_test, predTree1))
+print(classification_report(y_test, predTree1))
+
+# %% [markdown]
+# ### Random Forest Model
+
+# %%
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+
+
+# %%
+
+param_grid ={'bootstrap': [True, False],
+ 'max_depth': [5, 10, 20, 30, 40],
+ 'max_features': ['auto', 'sqrt'],
+ 'n_estimators': [10, 20, 30]
+            }
+
+CV_RF = GridSearchCV(estimator=RandomForestClassifier(class_weight='balanced'), param_grid=param_grid,cv=4)
+CV_RF.fit(x_train, y_train)
+print('Best Parameters: ', CV_RF.best_params_)
+
+# %%
+rf_clf = RandomForestClassifier(bootstrap=False, max_depth=5, max_features='auto', n_estimators=10, random_state=42)
+rf_clf.fit(x_train,y_train)
+predRF = rf_clf.predict(x_test)
+print("DecisionTrees's Accuracy: ", metrics.accuracy_score(y_test, predRF))
+print(classification_report(y_test, predRF))
+
+# %% [markdown]
+# ### Random Forest Model with class weight set to Balanced
+
+# %%
+rf_clf2 = RandomForestClassifier(bootstrap=False, max_depth=5, max_features='auto', n_estimators=10, random_state=42, class_weight='balanced')
+rf_clf2.fit(x_train,y_train)
+predRF2 = rf_clf2.predict(x_test)
+print("RandomForest's Accuracy: ", metrics.accuracy_score(y_test, predRF2))
+print(classification_report(y_test, predRF2))
+
+# %%
+importance = rf_clf2.feature_importances_
+# summarize feature importance
+for i,v in enumerate(importance):
+	print('Feature: %0d, Score: %.5f' % (i,v))
+# plot feature importance
+pyplot.bar([x for x in range(len(importance))], importance)
+pyplot.show()
+
+# %%
+data_final.columns
+
+# %%
+data_final.info()
+
+# %%
+
+# %% [markdown]
+# ### Logistic Regression Model
+
+# %%
+from sklearn.linear_model import LogisticRegression
+logRegModel = LogisticRegression(C=0.01)
+logRegModel.fit(x_train, y_train)
+logRegModel
+
+
+# %%
+predLog = logRegModel.predict(x_test)
+print("Logistic Regression Model's Accuracy: ", metrics.accuracy_score(y_test, predLog))
+print(classification_report(y_test, predLog))
+
+# %%
+logRegModel2 = LogisticRegression(C=0.01, class_weight='balanced')
+logRegModel2.fit(x_train, y_train)
+
+# %%
+predLog2 = logRegModel2.predict(x_test)
+print("Logistic Regression Model2's Accuracy: ", metrics.accuracy_score(y_test, predLog2))
+print(classification_report(y_test, predLog2))
+
+# %%
+importance = logRegModel2.coef_[0]
+# summarize feature importance
+for i,v in enumerate(importance):
+	print('Feature: %0d, Score: %.5f' % (i,v))
+# plot feature importance
+pyplot.bar([x for x in range(len(importance))], importance)
+pyplot.show()
+
+# %% [markdown]
+# ### Support Vector Machine Model
+
+# %%
+from sklearn import svm
+clf = svm.SVC(kernel='rbf')
+clf.fit(x_train, y_train) 
+
+# %%
+yhat = clf.predict(X_test)
+print (classification_report(y_test, yhat))
+print("Support Vector Model's Accuracy: ", metrics.accuracy_score(y_test, yhat))
 
 # %%
